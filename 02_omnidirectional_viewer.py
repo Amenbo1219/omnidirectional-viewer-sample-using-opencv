@@ -3,9 +3,10 @@
 import copy
 import time
 import argparse
-
+import os
 import cv2
 import numpy as np
+
 
 g_wheel = 0
 g_drag_flag = False
@@ -26,6 +27,8 @@ def get_args():
 
     parser.add_argument("--image", type=str, default='sample.png')
     parser.add_argument("--movie", type=str, default=None)
+
+    parser.add_argument("--out",type=str,default='./out')
 
     args = parser.parse_args()
 
@@ -160,11 +163,13 @@ def remap_image(image, phi, theta):
 
 
 def main():
-    global g_diff_x, g_diff_y, g_wheel
-
+    global g_diff_x, g_diff_y, g_wheel,count
     # コマンドライン引数
     args = get_args()
-
+    output_path = args.out
+    if output_path[-1] == '/':
+        output_path = output_path[:-1]
+    os.makedirs(output_path, exist_ok=True)
     viewpoint = args.viewpoint
     imagepoint = args.imagepoint + viewpoint
     base_imagepoint = imagepoint
@@ -177,6 +182,7 @@ def main():
 
     image_path = args.image
     movie_path = args.movie
+    count=0
 
     # 画面操作用変数
     roll = 0
@@ -254,25 +260,28 @@ def main():
         elapsed_time = time.time() - start_time
 
         # 情報表示
-        cv2.putText(
-            output_image,
-            "Elapsed Time : " + '{:.1f}'.format(elapsed_time * 1000) + "ms",
-            (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 1,
-            cv2.LINE_AA)
-        cv2.putText(output_image, "Viewpoint : " + '{:.1f}'.format(viewpoint),
-                    (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 1,
-                    cv2.LINE_AA)
-        cv2.putText(output_image,
-                    "Imagepoint : " + '{:.1f}'.format(imagepoint), (10, 75),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 1, cv2.LINE_AA)
-        cv2.putText(output_image, "Yaw : " + str(int(yaw)), (10, 100),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 1, cv2.LINE_AA)
-        cv2.putText(output_image, "Pitch : " + str(int(pitch)), (10, 125),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 1, cv2.LINE_AA)
+        # cv2.putText(
+        #     output_image,
+        #     "Elapsed Time : " + '{:.1f}'.format(elapsed_time * 1000) + "ms",
+        #     (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 1,
+        #     cv2.LINE_AA)
+        # cv2.putText(output_image, "Viewpoint : " + '{:.1f}'.format(viewpoint),
+        #             (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 1,
+        #             cv2.LINE_AA)
+        # cv2.putText(output_image,
+        #             "Imagepoint : " + '{:.1f}'.format(imagepoint), (10, 75),
+        #             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 1, cv2.LINE_AA)
+        # cv2.putText(output_image, "Yaw : " + str(int(yaw)), (10, 100),
+        #             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 1, cv2.LINE_AA)
+        # cv2.putText(output_image, "Pitch : " + str(int(pitch)), (10, 125),
+        #             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 1, cv2.LINE_AA)
 
         # 描画
         cv2.imshow(window_name, output_image)
         key = cv2.waitKey(1)
+        if key == ord('s'):
+            cv2.imwrite(f"./{count}.png",output_image)
+            count+=1
         if key == 27:  # ESC
             break
 

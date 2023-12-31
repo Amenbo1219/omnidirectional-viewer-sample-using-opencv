@@ -11,7 +11,7 @@ def get_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--roll", type=int, default=0)
-    parser.add_argument("--pitch", type=int, default=0)
+    parser.add_argument("--pitch", type=int, default=35)
     parser.add_argument("--yaw", type=int, default=0)
 
     parser.add_argument("--viewpoint", type=float, default=-1.0)
@@ -22,8 +22,8 @@ def get_args():
 
     parser.add_argument("--sensor_size", type=float, default=0.561)
 
-    parser.add_argument("--image", type=str, default='sample.png')
-    parser.add_argument("--output", type=str, default='output.png')
+    parser.add_argument("--image", type=str, default='./sample.png')
+    parser.add_argument("--output", type=str, default='./output.png')
 
     args = parser.parse_args()
 
@@ -117,11 +117,25 @@ def calculate_phi_and_theta(
     offset = yd * xd
     gain = -2 * xd + 1
     theta = gain * theta + offset
+    
 
     return phi, theta
 
 
 def remap_image(image, phi, theta):
+    input_height, input_width = image.shape[:2]
+
+    phi = (phi * input_height / np.pi + input_height / 2)
+    phi = phi.astype(np.float32)
+    theta = (theta * input_width / (2 * np.pi) + input_width / 2)
+    theta = theta.astype(np.float32)
+
+    output_image = cv2.remap(image, theta, phi, cv2.INTER_CUBIC)
+
+    return output_image
+
+
+def remap_er(image, phi, theta):
     input_height, input_width = image.shape[:2]
 
     phi = (phi * input_height / np.pi + input_height / 2)
